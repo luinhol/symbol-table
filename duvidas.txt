@@ -1,2 +1,0 @@
-todos arquivos de leitura terminam em .txt?
-

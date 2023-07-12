@@ -10,7 +10,7 @@ typedef struct celula Celula;
 
 struct celula
 {
-    No* no;
+    Pagina* pagina;
     Celula* prox;
 };
 
@@ -31,7 +31,7 @@ Lista* inicializaLista(){
     return lista;
 }
 
-void insereNo(Lista* lista, No* no){
+void inserePagina(Lista* lista, Pagina* pagina){
     Celula* nova = (Celula*)malloc(sizeof(Celula));
 
     if (lista->prim == NULL)
@@ -47,49 +47,7 @@ void insereNo(Lista* lista, No* no){
 
     lista->ult = nova;
     nova->prox = NULL;
-    nova->no = no;
-}
-
-void retiraNo(Lista* lista, int id){
-    Celula* ant = NULL;
-    Celula* p = lista->prim;
-
-    while (p !=NULL && (id == getId(p->no)))
-    {
-        ant = p;
-        p = p->prox;
-    }
-
-    if(lista->prim == NULL){
-        return;
-    }
-    if(lista->prim == lista->ult){
-        liberaNo(lista->prim->no);
-        free(p);
-        
-        lista->prim = NULL;
-        lista->ult = NULL;
-        return;
-    }
-    else if(lista->prim == p){
-        liberaNo(lista->prim->no);
-        lista->prim = p->prox;
-        free(p);
-    }
-    else if(lista->ult == p){
-        liberaNo(lista->ult->no);
-        ant->prox = NULL;
-        lista->ult = ant;
-        free(p);
-    }
-    else
-    {
-        ant->prox = p->prox;
-        liberaNo(p->no);
-        free(p);
-    }
-    lista->iterator = lista->prim;
-    return;
+    nova->pagina = pagina;
 }
 
 void imprimeLista(Lista* lista){
@@ -97,7 +55,7 @@ void imprimeLista(Lista* lista){
 
     while (p !=NULL)
     {
-        imprimeNo(p->no);
+        imprimePagina(p->pagina);
         printf(" ");
         p = p->prox;
     }
@@ -110,40 +68,45 @@ void liberaLista(Lista* lista){
     while (p !=NULL)
     {
         ant = p;
-        liberaNo(p->no);
+        liberaPagina(p->pagina);
         p = p->prox;
         free(ant);
     }
     free(lista);
 }
 
-No* getPrim(Lista* lista){
-    return lista->prim->no;
+Pagina* getPrim(Lista* lista){
+    return lista->prim->pagina;
 }
 
 // caminha ate encontrar um No com o mesmo identificador informado
-No* getNo(Lista* lista, int id){
+Pagina* getPagina(Lista* lista, char* nome){
     Celula* p = lista->prim;
 
-    while ((p != NULL) && (id != getId(p->no)))
+    while ((p != NULL) && strcmp(getNomePagina(p->pagina), nome))
     {
         p = p->prox;
     }
 
-    return p->no;
+    if (p != NULL)
+    {
+        return p->pagina;
+    }
+    
+    return NULL;
 }
 
 // caminha o iterador para o proximo No da lista e retorna esse No
-No* proxNo(Lista* lista){
+Pagina* proxPagina(Lista* lista){
     if(lista->iterator == NULL){
         lista->iterator = lista->prim;
         return NULL;
     }
 
     Celula* cel = lista->iterator;
-    No* no = cel->no;
+    Pagina* pagina = cel->pagina;
 
     lista->iterator = cel->prox;
     
-    return no;
+    return pagina;
 }

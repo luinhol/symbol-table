@@ -10,16 +10,14 @@ struct entrada
 {
     int numPags;
     int numStopWords;
-    // lista do nome das paginas consideradas
-    char** index;
-    // stop words
+    // hash das paginas
+    Hash* index;
+    // arvore rubro negra das stopwords
     char** stopWords;
-    // links entre as páginas (index de cada pagina no index)
-    Lista** graph;
 };
 
 // funcao que inicializara a estrutura que armazena os dados, alocando vetor para a mesma
-Entrada* inicializaEntrada(int numPags, int numStopWords, char** index, char** stopWords, Lista** graph){
+Entrada* inicializaEntrada(int numPags, int numStopWords, Hash* index, char** stopWords){
     Entrada* entrada = (Entrada*)malloc(sizeof(Entrada));
 
     entrada->numPags = numPags;
@@ -27,52 +25,47 @@ Entrada* inicializaEntrada(int numPags, int numStopWords, char** index, char** s
 
     entrada->index = index;
     entrada->stopWords = stopWords;
-    entrada->graph = graph;
 
     return entrada;
 }
 
-char* getIndex(Entrada* entrada, int indice){
-    return entrada->index[indice];
+Hash* getIndex(Entrada* entrada){
+    return entrada->index;
 }
 
 char* getStopWord(Entrada* entrada, int indice){
     return entrada->stopWords[indice];
 }
 
-Lista* getLinks(Entrada* entrada, int indice){
-    return entrada->graph[indice];
-}
-
 // funcao que adquire os dados a partir de um arquivo
-Entrada* setDados(FILE *indexFile, FILE *stopWordsFile, FILE *graphFile)
+Entrada* setDados(FILE *indexFile, FILE *stopWordsFile)
 {
     // declara variaveis
     Entrada* entrada;
     int numPags = 0, numStopWords = 0, numLinks = 0;
 
     // realiza leitura do arquivo de index
-    numPags = getNumLines(FILE *indexFile);
-    char** index = getIndexFile(FILE *indexFile, numPags);
+    numPags = getNumLines(indexFile);
+    printf("num pags: %d\n", numPags);
+    // Hash* index = getIndexFile(indexFile, numPags);
 
     // realiza leitura do arquivo de stopWords
-    numStopWords = getNumLines(FILE *stopWordsFile);
-    char** stopWords = getStopWordsFile(FILE *stopWordsFile, numStopWords);
-
-    // realiza leitura do arquivo de graph
-    Lista** graph = getGraphFile(FILE *graphFile, numPags);
+    numStopWords = getNumLines(stopWordsFile);
+    printf("num StopWords: %d\n", numStopWords);
+    // char** stopWords = getStopWordsFile(stopWordsFile, numStopWords);
 
     // inicializa a entrada
-    entrada = inicializaEntrada(index, stopWords, graph);
+    // entrada = inicializaEntrada(numPags, numStopWords, index, stopWords);
 
     return entrada;
 }
 
 // funcao que adquire os index a partir do arquivo de index
-char** getIndexFile(FILE *indexFile, int numIndex)
+Hash* getIndexFile(FILE *indexFile, int numPags)
 {
     // declara variaveis
-    char** index = (char**)malloc(sizeof(char*)*numIndex);
+    Hash* h = inicializaHash((numPags * 2) - 1);
+    
     fseek(indexFile, 0, SEEK_SET);
     size_t len = 0;
     char *line = NULL;
@@ -81,17 +74,17 @@ char** getIndexFile(FILE *indexFile, int numIndex)
     fpos_t pos;
     ssize_t n;
 
-
-    for (i = 0; i < numIndex; i++)
+    for (i = 0; i < numPags; i++)
     {
         n = getline(&line, &len, indexFile);
+        Pagina* p = inicializaPagina(line);
 
-        index[i] = line;
+        insereHash(h, line, p);
     }
 
     // libera a variavel linha
     free(line);
-    return index;
+    return h;
 }
 
 // funcao que adquire os index a partir do arquivo de index
@@ -107,10 +100,9 @@ char** getStopWordsFile(FILE *stopWordsFile, int numStopWords)
     fpos_t pos;
     ssize_t n;
 
-
     for (i = 0; i < numStopWords; i++)
     {
-        n = getline(&line, &len, numStopWords);
+        n = getline(&line, &len, stopWordsFile);
 
         index[i] = line;
     }
@@ -120,55 +112,35 @@ char** getStopWordsFile(FILE *stopWordsFile, int numStopWords)
     return index;
 }
 
-// funcao que adquire os index a partir do arquivo de index
-Lista** getGraphFile(FILE *indexFile, int numIndex)
-{
-    // declara variaveis
-    char** index = (char**)malloc(sizeof(char*)*numIndex);
-    fseek(indexFile, 0, SEEK_SET);
-    size_t len = 0;
-    char *line = NULL;
-    char *pt;
-    int i = 0;
-    fpos_t pos;
-    ssize_t n;
-
-
-    for (i = 0; i < numIndex; i++)
-    {
-        n = getline(&line, &len, indexFile);
-
-        pt = strtok(line, ";");
-        vOrigem = atoi(pt);
-        
-        index[i] = line;
-    }
-
-    // libera a variavel linha
-    free(line);
-    return index;
-}
-
-// funcao para contar a quantidade de atualizacoes do arquivo
+// funcao para contar a quantidade de linhas do arquivo
 int getNumLines(FILE *arquivo){
+    fseek(arquivo, 0, SEEK_SET);
     // inicializa variaveis
     size_t len = 0, n = 0;
     char *line = NULL;
     int numLines = 0;
 
     // conta as atualizacoes
-    while (!feof_unlocked(arquivo))
+    // while (!feof_unlocked(arquivo))
+    // {
+    //     n = getline(&line, &len, arquivo);
+    //     if (n <= 0)
+    //     {
+    //         // linha vazia ou final do arquivo
+    //         break;
+    //     }
+    //     if (n > 1)
+    //     {
+    //         printf("%s\n", line);
+    //         ++numLines;
+    //     }
+    // }
+
+    n = getline(&line, &len, arquivo);
+    if (n > 1)
     {
-        n = getline(&line, &len, arquivo);
-        if (n <= 0)
-        {
-            // linha vazia ou final do arquivo
-            break;
-        }
-        if (n > 1)
-        {
-            ++numLines;
-        }
+        printf("%s\n", line);
+        ++numLines;
     }
 
     // libera a variavel linha
@@ -180,36 +152,17 @@ void limpaDadosEntrada(Entrada* entrada){
     int i;
 
     for(i = 0; i < entrada->numPags; i++){
-        free(entrada->index[i]);
+        liberaHash(entrada->index);
     }
 
     for(i = 0; i < entrada->numStopWords; i++){
-        liberaLista(entrada->stopWords[i]);
-    }
-
-    for(i = 0; i < entrada->graph; i++){
-        liberaLista(entrada->graph[i]);
+        free(entrada->stopWords[i]);
     }
 
     free(entrada->index);
     free(entrada->stopWords);
-    free(entrada->graph);
 }
 
-void escreveSaida(FILE* saida, int tamCaminho, int* caminhoPercorrido, double distanciaTotal, double tempo){
-    int i;
-    for (i = 0; i < tamCaminho; i++)
-    {
-        fprintf(saida, "%d;",caminhoPercorrido[i]);
-    }
-    fprintf(saida, "%d\n", caminhoPercorrido[i]);
-
-    fprintf(saida, "%.14f\n", distanciaTotal/1000);
-
-    int tmpH, tmpM;
-    double tmpS;
-    tmpH = tempo/3600;
-    tmpM = (tempo -(3600*tmpH))/60;
-    tmpS = (tempo -(3600*tmpH)-(tmpM*60));
-    fprintf(saida, "%02d:%02d:%.14f", tmpH, tmpM, tmpS);
+void escreveSaida(FILE* saida){
+    fprintf(saida, "testando escrita arquivo saida\n");
 }

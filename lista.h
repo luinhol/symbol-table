@@ -1,15 +1,15 @@
-/** Define um tad Lista de No.
+/** Define um tad Lista de Pagina.
  * @file lista.h
  * @author Lucas Pereira Taborda
  */
 
-#include "no.h"
+#include "pagina.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 /**
- * Tad lista de No
+ * Tad lista de Pagina
  */
 typedef struct lista Lista;
 
@@ -22,16 +22,16 @@ Lista* inicializaLista();
 /**
  * Funcao que insere um No na Lista
  * @param lista Lista que sera inserido o No
- * @param no No a ser inserido na Lista
+ * @param pagina No a ser inserido na Lista
  */
-void insereNo(Lista* lista, No* no);
+void inserePagina(Lista* lista, Pagina* pagina);
 
 /**
  * Funcao que retira um No da Lista
  * @param lista Lista que sera retirado o No
  * @param id id do No a ser retirado
  */
-void retiraNo(Lista* lista, int id);
+void retiraPagina(Lista* lista, int id);
 
 /**
  * Funcao que imprime uma Lista
@@ -49,7 +49,7 @@ void liberaLista(Lista* lista);
  * Funcao que retorna o primeiro No da Lista
  * @param lista Lista
  */
-No* getPrim(Lista* lista);
+Pagina* getPrim(Lista* lista);
 
 /**
  * Funcao que retorna um No presente na lista
@@ -57,11 +57,11 @@ No* getPrim(Lista* lista);
  * @param id id do No a ser procurado
  * @return No presente na lista
  */
-No* getNo(Lista* lista, int id);
+Pagina* getPagina(Lista* lista, char* nome);
 
 /**
  * Funcao que caminha para o proximo No da lista
  * @param lista Lista
  * @return proximo No presente na lista
  */
-No* proxNo(Lista* lista);
+Pagina* proxPagina(Lista* lista);

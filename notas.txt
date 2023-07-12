@@ -1,0 +1,14 @@
+passo 1 - realizar leitura e salvar variaveis
+    realizar leitura de index.txt (salvando em uma hash)
+        estrutura pagina contem: nome da pagina, numero de links entrando, links saindo (arvore rubro negra), valor do pageRank
+
+    realizar leitura das stopWords (salvando em uma arvore rubro negra?)
+
+    realizar leitura de todos os arquivos salvando os termos diferente das stopwords na estrutura global termos (arvore rubro negra)
+        estrutura termos possui: o termo em si, hash de paginas
+
+passo 2 - calcular o pageRank de todas as paginas e salvar na estrutura delas
+
+passo 4 - leitura da consulta e pesquisa na arvore de termos para adquirir as paginas que possuem aqueles termos
+
+passo 5 - identificar as paginas que possuem os 2 termos

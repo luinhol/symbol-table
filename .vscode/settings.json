@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "UF.C": "cpp",
+        "string.h": "c",
+        "types.h": "c",
+        "item.h": "c"
+    }
+}
