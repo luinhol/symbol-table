@@ -39,6 +39,8 @@ void retiraPagina(Lista* lista, int id);
  */
 void imprimeLista(Lista* lista);
 
+void imprimeListaArquivo(Lista* lista, FILE* arquivo);
+
 /**
  * Destrutor de Lista
  * @param lista Lista a ser destruida

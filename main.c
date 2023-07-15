@@ -7,35 +7,35 @@ int main(int argc, char* argv[]){
     char nomeDiretorioEntrada[99] = "";
     char nomeArqIndex[99] = "";
     char nomeArqStopWords[99] = "";
+    char nomeArqGrafo[99] = "";
     char nomeArquivoSaida[99] = "";
+    char nomeDirPages[99] = "";
+
     FILE *arqIndex;
     FILE *arqStopWords;
+    FILE *arqGrafo;
     FILE *arqSaida;
     Entrada *entrada;
 
     // copia o nome dos arquivos de entrada e saida fornecidos como parametros
-    // strcat(nomeDiretorioEntrada, argv[1]);
-    // strcat(nomeArquivoSaida, argv[2]);
+    strcat(nomeDiretorioEntrada, "/mnt/c/Users/lucas/Desktop/codes/UFES/4 periodo/tbo/c/trabalho3/exemplo/exemplo/");
+    strcat(nomeArquivoSaida, "saida.txt");
 
-    // strcat(nomeArqIndex, nomeDiretorioEntrada);
-    // strcat(nomeArqStopWords, nomeDiretorioEntrada);
+    strcat(nomeArqIndex, nomeDiretorioEntrada);
+    strcat(nomeArqStopWords, nomeDiretorioEntrada);
+    strcat(nomeArqGrafo, nomeDiretorioEntrada);
+    strcat(nomeDirPages, nomeDiretorioEntrada);
 
-    // strcat(nomeArqIndex, "/index.txt");
-    // strcat(nomeArqStopWords, "/stopwords.txt");
-
-    // TESTE
-    strcat(nomeArquivoSaida, "./saida.txt");
-    strcat(nomeArqIndex, "./exemplo/exemplo/index.txt");
-    strcat(nomeArqStopWords, "./exemplo/exemplo/stopwords.txt");
-    // TESTE
+    strcat(nomeArqIndex, "index.txt");
+    strcat(nomeArqStopWords, "stopwords.txt");
+    strcat(nomeArqGrafo, "graph.txt");
+    strcat(nomeDirPages, "pages/");
 
     // realiza abertura dos arquivo para manipulacao
-    arqIndex = fopen(nomeDiretorioEntrada, "r");
-    arqStopWords = fopen(nomeDiretorioEntrada, "r");
+    arqIndex = fopen(nomeArqIndex, "r");
+    arqStopWords = fopen(nomeArqStopWords, "r");
+    arqGrafo = fopen(nomeArqGrafo, "r");
     arqSaida = fopen(nomeArquivoSaida, "w");
-
-    printf("nome arquivo index: %s\n", nomeArqIndex);
-    printf("nome arquivo stop words: %s\n", nomeArqStopWords);
 
     // verifica se o arquivo é válido
     if (arqIndex == NULL)
@@ -51,14 +51,15 @@ int main(int argc, char* argv[]){
     }
 
     // adquire os dados da entrada
-    setDados(arqIndex, arqStopWords);
+    entrada = setDados(arqIndex, arqStopWords, arqGrafo, nomeDirPages);
     
-    escreveSaida(arqSaida);
+    escreveSaida(entrada, arqSaida);
 
-    // limpaDadosEntrada(entrada);
-    // free(entrada);
+    limpaDadosEntrada(entrada);
+    free(entrada);
     fclose(arqIndex);
     fclose(arqStopWords);
+    fclose(arqGrafo);
     fclose(arqSaida);
     return 0;
 }

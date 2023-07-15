@@ -10,6 +10,10 @@ typedef struct hash Hash;
 
 Hash* inicializaHash(int tam);
 
+Lista* getListaHash(Hash* hashtable, int index);
+
+int getTamanhoHash(Hash* hashTable);
+
 void liberaHash(Hash* hashTable);
 
 uint32_t funcaoHash(char* s, int len, uint32_t M);
@@ -17,3 +21,7 @@ uint32_t funcaoHash(char* s, int len, uint32_t M);
 void insereHash(Hash* hashTable, char* s, Pagina* pagina);
 
 Pagina* procuraHash(Hash* hashTable, char* string);
+
+void imprimeHash(Hash* hash);
+
+void imprimeHashArquivo(Hash* hash, FILE* arquivo);

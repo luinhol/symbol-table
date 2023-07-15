@@ -61,6 +61,17 @@ void imprimeLista(Lista* lista){
     }
 }
 
+void imprimeListaArquivo(Lista* lista, FILE* arquivo){
+    Celula* p = lista->prim;
+
+    while (p !=NULL)
+    {
+        imprimePaginaArquivo(p->pagina, arquivo);
+        fprintf(arquivo, " ");
+        p = p->prox;
+    }
+}
+
 void liberaLista(Lista* lista){
     Celula* p = lista->prim;
     Celula* ant = NULL;
@@ -98,15 +109,18 @@ Pagina* getPagina(Lista* lista, char* nome){
 
 // caminha o iterador para o proximo No da lista e retorna esse No
 Pagina* proxPagina(Lista* lista){
+    Celula* cel;
     if(lista->iterator == NULL){
         lista->iterator = lista->prim;
         return NULL;
     }
 
-    Celula* cel = lista->iterator;
+    lista->iterator = lista->iterator->prox;
+    cel = lista->iterator;
+    if(cel == NULL){
+        return NULL;
+    }
     Pagina* pagina = cel->pagina;
-
-    lista->iterator = cel->prox;
     
     return pagina;
 }

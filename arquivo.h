@@ -6,21 +6,24 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include "lista.h"
 #include "hash.h"
-#include <sys/types.h>
+#include "arvoreRubroNegra.h"
 
 /**
  * Estrutura que armazena dados da entrada
  */
 typedef struct entrada Entrada;
 
+Entrada* inicializaEntrada(int numPags, int numStopWords, Hash* index, char** stopWords, RBT* palavras);
+
 /**
  * Função que adquire os dados de entrada de um arquivo
  * @param arquivo Arquivo de entrada
  * @return Estrutura com os dados de entrada
  */
-Entrada* setDados(FILE *index, FILE *stopWords);
+Entrada* setDados(FILE *indexFile, FILE *stopWordsFile, FILE *grafoFile, char* nomeDirPages);
 
 /**
  * Funcao que retorna a lista de adjacencia de um no (indice)
@@ -33,6 +36,10 @@ Lista* getLista(Entrada* entrada, int indice);
 int getNumLines(FILE *arquivo);
 
 Hash* getIndexFile(FILE *indexFile, int numPags);
+
+RBT* setTermos(int numPags, Hash* hash, char* dir);
+
+RBT* leituraPagina(int numPags, FILE* arqPagina, Pagina* pagina);
 
 char** getStopWordsFile(FILE *stopWordsFile, int numStopWords);
 
@@ -50,4 +57,4 @@ void limpaDadosEntrada(Entrada *entrada);
  * @param distanciaTotal distancia total percorrida
  * @param tempo tempo decorrido
  */
-void escreveSaida(FILE* saida);
+void escreveSaida(Entrada* entrada, FILE* saida);

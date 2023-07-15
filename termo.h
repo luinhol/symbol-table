@@ -15,6 +15,12 @@
  */
 typedef struct termo Termo;
 
-Termo* inicializaTermo(char** palavra, int numPaginas);
+Termo* inicializaTermo(char* palavra, int numPaginas);
+
+char* getNomeTermo(Termo* termo);
+
+Hash* getHash(Termo* termo);
 
 void adcionaPagina(Termo* termo, Pagina* pagina);
+
+void liberaTermo(Termo* termo);

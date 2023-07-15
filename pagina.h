@@ -22,4 +22,6 @@ char* getNomePagina(Pagina* p);
 
 void imprimePagina(Pagina* p);
 
+void imprimePaginaArquivo(Pagina* p, FILE* saida);
+
 void liberaPagina(Pagina* p);
