@@ -39,7 +39,7 @@ Hash* getIndexFile(FILE *indexFile, int numPags);
 
 RBT* setTermos(int numPags, Hash* hash, char* dir);
 
-RBT* leituraPagina(int numPags, FILE* arqPagina, Pagina* pagina);
+RBT* leituraPagina(RBT* rbt, int numPags, FILE* arqPagina, Pagina* pagina);
 
 char** getStopWordsFile(FILE *stopWordsFile, int numStopWords);
 
@@ -58,3 +58,5 @@ void limpaDadosEntrada(Entrada *entrada);
  * @param tempo tempo decorrido
  */
 void escreveSaida(Entrada* entrada, FILE* saida);
+
+void realizaPesquisa(Entrada* entrada, char* palavras);

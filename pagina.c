@@ -27,7 +27,7 @@ char* getNomePagina(Pagina* p){
 }
 
 void imprimePagina(Pagina* p){
-    printf("nome pagina: %s", p->nome);
+    printf("%s", p->nome);
 }
 
 void imprimePaginaArquivo(Pagina* p, FILE* saida){
@@ -37,4 +37,8 @@ void imprimePaginaArquivo(Pagina* p, FILE* saida){
 void liberaPagina(Pagina* p){
     free(p->nome);
     free(p);
+}
+
+int comparaPagina(Pagina* p1, Pagina* p2){
+    return strcmp(getNomePagina(p1), getNomePagina(p2));
 }

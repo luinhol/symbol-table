@@ -47,6 +47,8 @@ void imprimeListaArquivo(Lista* lista, FILE* arquivo);
  */
 void liberaLista(Lista* lista);
 
+void liberaListaEPaginas(Lista* lista);
+
 /**
  * Funcao que retorna o primeiro No da Lista
  * @param lista Lista
@@ -67,3 +69,5 @@ Pagina* getPagina(Lista* lista, char* nome);
  * @return proximo No presente na lista
  */
 Pagina* proxPagina(Lista* lista);
+
+Lista* comparaListas(Lista* commonPages, Lista* lista1, Lista* lista2);

@@ -17,11 +17,11 @@ struct termo
 Termo* inicializaTermo(char* palavra, int numPaginas){
     Termo* termo = (Termo*)malloc(sizeof(Termo));
 
-    // Hash* hash = inicializaHash((numPaginas*2) - 1);
+    Hash* hash = inicializaHash((numPaginas*2) - 1);
 
     termo->palavra = palavra;
 
-    // termo->paginas = hash;
+    termo->paginas = hash;
 
     return termo;
 }
@@ -39,7 +39,7 @@ void adcionaPagina(Termo* termo, Pagina* pagina){
 }
 
 void liberaTermo(Termo* termo){
-    // liberaHash(termo->paginas);
+    liberaHash(termo->paginas, false);
     free(termo->palavra);
     free(termo);
 }

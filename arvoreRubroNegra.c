@@ -25,7 +25,6 @@ Termo* search(RBT *n, char* key) {
     while (n != NULL) {
         int cmp;
         cmp = compare(key, n->key);
-        printf("\ncmp= %d, key1: %s, key2: %s", cmp, key, n->key);
         if (cmp < 0){
             n = n->l;
         }
@@ -33,7 +32,6 @@ Termo* search(RBT *n, char* key) {
             n = n->r;
         }
         else{
-            printf("\nencontrei palavra");
             return n->termo;
         }
     }
@@ -72,10 +70,8 @@ void flip_colors(RBT *h) {
 }
 
 RBT* RBT_insert(RBT *h, char* key, Termo* termo) {
-    printf("\nRBT_INSERT(%s)", key);
     // Insert at bottom and color it red.
     if (h == NULL) {
-        printf("\ncriando no(%s)", key);
         return create_node(key, RED, termo);
     }
 
@@ -124,8 +120,8 @@ void printRBT(RBT* rbt){
     if(rbt != NULL)
     {
         printRBT(rbt->l);
-        printf("\nTermo: %s Paginas: ", getNomeTermo(rbt->termo));
-        // imprimeHash(getHash(rbt->termo));
+        printf("\nTermo: %s \nPaginas: ", getNomeTermo(rbt->termo));
+        imprimeHash(getHash(rbt->termo));
         printRBT(rbt->r);
     }
 }

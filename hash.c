@@ -39,7 +39,8 @@ int getTamanhoHash(Hash* hashTable){
     return hashTable->tamanho;
 }
 
-void liberaHash(Hash* hashTable) {
+// argumento bool "b" se traduz para excluir ou nao as paginas, b = true para excluir, e b = false para nao excluir
+void liberaHash(Hash* hashTable, bool b) {
     if (hashTable == NULL) {
         return;
     }
@@ -47,7 +48,12 @@ void liberaHash(Hash* hashTable) {
     for (int i = 0; i < hashTable->tamanho; i++) {
         Celula* celula = hashTable->celulas[i];
         if(celula != NULL){
-            liberaLista(celula->paginas);
+            if(b == false){
+                liberaLista(celula->paginas);
+            }
+            else{
+                liberaListaEPaginas(celula->paginas);
+            }
             free(celula);
         }
     }
@@ -108,16 +114,16 @@ void imprimeHash(Hash* hashTable){
 
     printf("estado atual da hash:\n");
     for(int i = 0; i < hashTable->tamanho; i++){
-        printf("\t [%d]", i);
         if (hashTable->celulas[i] != NULL)
         {
+            printf("\t [%d]", i);
             lista = getListaCelula(hashTable->celulas[i]);
             imprimeLista(hashTable->celulas[i]->paginas);
+            printf("\n");
         }
         else {
-            printf("vazio");
+            // printf("vazio");
         }
-        printf("\n");
     }
 }
 
@@ -137,4 +143,35 @@ void imprimeHashArquivo(Hash* hashTable, FILE* saida){
         }
         fprintf(saida, "\n");
     }
+}
+
+Lista* getPaginasComuns(Hash** hashTable, int numHashes) {
+    int i = 0, j = 0;
+    Lista* commonPages = inicializaLista();
+    Lista* lista1 = NULL;
+    Lista* lista2 = NULL;
+
+    Hash* firstHash = hashTable[0];
+    if (firstHash == NULL)
+    {
+        return NULL;
+    }
+    int hashTam = getTamanhoHash(firstHash);
+
+    // itero sobre cada posicao da hash
+    for(i = 0; i < hashTam; i++){
+        if (firstHash->celulas[i] != NULL)
+        {
+            // adquiro a lista de paginas de uma posicao nao nula da hash
+            lista1 = getListaHash(firstHash, i);
+
+            // itero pelas outras hashs para ver se possui pagina comum
+            for(j = 1; j < numHashes; j++){
+                lista2 = getListaHash(hashTable[j], i);
+                commonPages = comparaListas(commonPages, lista1, lista2);
+            }
+        }
+    }
+
+    return commonPages;
 }

@@ -1,3 +1,5 @@
+// Lucas Pereira Taborda
+
 #include <stdlib.h>
 #include <stdio.h>
 #include "arquivo.h"
@@ -16,6 +18,11 @@ int main(int argc, char* argv[]){
     FILE *arqGrafo;
     FILE *arqSaida;
     Entrada *entrada;
+
+    size_t len = 0;
+    char *line = NULL;
+    char *pt;
+    char* palavras;
 
     // copia o nome dos arquivos de entrada e saida fornecidos como parametros
     strcat(nomeDiretorioEntrada, "/mnt/c/Users/lucas/Desktop/codes/UFES/4 periodo/tbo/c/trabalho3/exemplo/exemplo/");
@@ -52,10 +59,22 @@ int main(int argc, char* argv[]){
 
     // adquire os dados da entrada
     entrada = setDados(arqIndex, arqStopWords, arqGrafo, nomeDirPages);
+
+    while (!feof_unlocked(stdin))
+    {
+        ssize_t n = getline(&line, &len, stdin);
+
+        palavras = strdup(line);
+
+        realizaPesquisa(entrada, palavras);
+    }
     
-    escreveSaida(entrada, arqSaida);
+    
+    // escreveSaida(entrada, arqSaida);
 
     limpaDadosEntrada(entrada);
+    free(palavras);
+    free(line);
     free(entrada);
     fclose(arqIndex);
     fclose(arqStopWords);

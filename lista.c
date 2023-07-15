@@ -79,6 +79,20 @@ void liberaLista(Lista* lista){
     while (p !=NULL)
     {
         ant = p;
+        // liberaPagina(p->pagina);
+        p = p->prox;
+        free(ant);
+    }
+    free(lista);
+}
+
+void liberaListaEPaginas(Lista* lista){
+    Celula* p = lista->prim;
+    Celula* ant = NULL;
+
+    while (p !=NULL)
+    {
+        ant = p;
         liberaPagina(p->pagina);
         p = p->prox;
         free(ant);
@@ -123,4 +137,30 @@ Pagina* proxPagina(Lista* lista){
     Pagina* pagina = cel->pagina;
     
     return pagina;
+}
+
+Lista* comparaListas(Lista* commonPages, Lista* lista1, Lista* lista2){
+    if(lista1 == NULL || lista2 == NULL){
+        return commonPages;
+    }
+    Pagina* pag1 = getPrim(lista1);
+
+    while(pag1 != NULL){
+        Pagina* pag2 = getPrim(lista2);
+        // while (pag2 != NULL)
+        // {
+        //     if(comparaPagina(pag1, pag2) == 0){
+        //         inserePagina(commonPages, pag1);
+        //     }
+        //     pag2 = proxPagina(lista2);
+        // }
+        
+        if(getPagina(lista2, getNomePagina(pag1)) != NULL){
+            inserePagina(commonPages, pag1);
+        }
+
+        pag1 = proxPagina(lista1);
+    }
+    
+    return commonPages;
 }

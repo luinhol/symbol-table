@@ -171,7 +171,7 @@ RBT* setTermos(int numPags, Hash* hash, char* dir){
     char* nomeArqPagina;
     int tamNomeArquivo = 0;
 
-    RBT* rbt;
+    RBT* rbt = NULL;
 
     for (i = 0; i < getTamanhoHash(hash); i++)
     {
@@ -190,7 +190,7 @@ RBT* setTermos(int numPags, Hash* hash, char* dir){
                 strcat(nomeArqPagina, "\0");
                 arqPagina = fopen(nomeArqPagina, "r");
 
-                rbt = leituraPagina(numPags, arqPagina, pagina);
+                rbt = leituraPagina(rbt, numPags, arqPagina, pagina);
 
                 free(nomeArqPagina);
                 fclose(arqPagina);
@@ -229,22 +229,17 @@ int getNumLines(FILE *arquivo){
     return numLines;
 }
 
-RBT* leituraPagina(int numPags, FILE* arqPagina, Pagina* pagina){
+RBT* leituraPagina(RBT* rbt, int numPags, FILE* arqPagina, Pagina* pagina){
     fseek(arqPagina, 0, SEEK_SET);
 
     size_t len = 0;
     char *line = NULL;
     char *pt;
-
-    RBT* rbt = NULL;
     Termo* termo;
     char* palavra;
 
     while (!feof_unlocked(arqPagina))
     {
-        // char buffer[1024];
-        // fgets(buffer, 1024, arqPagina);
-
         ssize_t n = getline(&line, &len, arqPagina);
 
         char *token = strtok(line, " \t\n");  // divide o buffer com os delimitadores
@@ -254,7 +249,6 @@ RBT* leituraPagina(int numPags, FILE* arqPagina, Pagina* pagina){
             // printf("palavra: %s\n", palavra);
             termo = search(rbt, palavra);
             if(termo == NULL){ // se o termo ainda nao foi incluido na arvore
-                printf("\ninicializando termo: %s", palavra);
                 termo = inicializaTermo(palavra, numPags);   // deve ser inicializado
                 // liberaTermo(termo);
                 rbt = RBT_insert(rbt, palavra, termo); // e inserido no arvore
@@ -262,11 +256,13 @@ RBT* leituraPagina(int numPags, FILE* arqPagina, Pagina* pagina){
             else{
                 free(palavra);
             }
-            // adcionaPagina(termo, pagina);   // adciona pagina na hash de paginas que o termo esta
+            adcionaPagina(termo, pagina);   // adciona pagina na hash de paginas que o termo esta
 
             token = strtok(NULL, " \t\n");  // vai para o proximo token
         }
     }
+    // printf("paginas de cada termo:\n");
+    // printRBT(rbt);
     free(line);
     return rbt;
 }
@@ -278,20 +274,68 @@ void limpaDadosEntrada(Entrada* entrada){
         free(entrada->stopWords[i]);
     }
     free(entrada->stopWords);
-    liberaHash(entrada->index);
-    printRBT(entrada->palavras);
+    liberaHash(entrada->index, true);
     deleteRBT(entrada->palavras);
 }
 
 void escreveSaida(Entrada* entrada, FILE* saida){
-    fprintf(saida, "testando escrita arquivo saida\n");
-    
-    fprintf(saida, "hash:\n");
-    imprimeHashArquivo(entrada->index, saida);
-
     fprintf(saida, "stopwords:\n");
     for (int i = 0; i < entrada->numStopWords; i++)
     {
         fprintf(saida, "%s\n", entrada->stopWords[i]);
     }
+}
+
+void realizaPesquisa(Entrada* entrada, char* palavras){
+    printf("search:%s", palavras);
+
+    Pagina** pages;
+    Lista* paginasComuns;
+
+    int tamHashs = 5, qtdHashs = 0;
+    Hash** hashs = (Hash**)calloc(tamHashs, sizeof(Hash*));
+
+    Termo* termo = NULL;
+    char *palavra;
+    char *token = strtok(palavras, " ");
+
+    int i = 0;
+
+    // realiza leitura dos tokens e armazena o vetor dos termos
+    while (token != NULL) {
+        palavra = strdup(token);
+        termo = search(entrada->palavras, palavra);
+        free(palavra);
+
+        // se um dos termos nao existir na arvore ja retorna 
+        if(termo == NULL){
+            break;
+        }
+
+        hashs[i] = getHash(termo);
+        qtdHashs++;
+
+        i++;
+        if(tamHashs - i <= 0){
+            i += tamHashs;
+            tamHashs = tamHashs*2;
+            hashs = (Hash**)realloc(hashs, sizeof(Hash*)*tamHashs);
+        }
+        token = strtok(NULL, " \n");  // vai para o proximo token
+    }
+
+    // for(i = 0; i < numTermos; i++){
+    //     printf("\ntermo: %s", getNomeTermo(termos[i]));
+    // }
+
+    if(hashs != NULL){
+        paginasComuns = getPaginasComuns(hashs, qtdHashs);
+    }
+
+    printf("pages:");
+    imprimeLista(paginasComuns);
+    printf("\n");
+
+    liberaLista(paginasComuns);
+    free(hashs);
 }

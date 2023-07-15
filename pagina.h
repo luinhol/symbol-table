@@ -25,3 +25,5 @@ void imprimePagina(Pagina* p);
 void imprimePaginaArquivo(Pagina* p, FILE* saida);
 
 void liberaPagina(Pagina* p);
+
+int comparaPagina(Pagina* p1, Pagina* p2);
