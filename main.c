@@ -24,8 +24,10 @@ int main(int argc, char* argv[]){
     char *pt;
     char* palavras;
 
-    // copia o nome dos arquivos de entrada e saida fornecidos como parametros
+    // copia o nome do diretorio de entrada fornecido como parametro
     strcat(nomeDiretorioEntrada, "/mnt/c/Users/lucas/Desktop/codes/UFES/4 periodo/tbo/c/trabalho3/exemplo/exemplo/");
+    // strcat(nomeDiretorioEntrada, "/mnt/c/Users/lucas/Desktop/codes/UFES/4 periodo/tbo/c/trabalho3/exemploPDF/");
+    // strcat(nomeDiretorioEntrada, argv[1]);
     strcat(nomeArquivoSaida, "saida.txt");
 
     strcat(nomeArqIndex, nomeDiretorioEntrada);
@@ -67,13 +69,13 @@ int main(int argc, char* argv[]){
         palavras = strdup(line);
 
         realizaPesquisa(entrada, palavras);
+        free(palavras);
     }
     
     
     // escreveSaida(entrada, arqSaida);
 
     limpaDadosEntrada(entrada);
-    free(palavras);
     free(line);
     free(entrada);
     fclose(arqIndex);

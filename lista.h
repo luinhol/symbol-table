@@ -3,15 +3,20 @@
  * @author Lucas Pereira Taborda
  */
 
+/**
+ * Tad lista de Pagina
+ */
+typedef struct lista Lista;
+
+#ifndef LISTA_H
+#define LISTA_H
+
+#include <math.h>
 #include "pagina.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/**
- * Tad lista de Pagina
- */
-typedef struct lista Lista;
 
 /**
  * Funcao que inicializa uma Lista
@@ -38,6 +43,8 @@ void retiraPagina(Lista* lista, int id);
  * @param lista Lista a ser impressa
  */
 void imprimeLista(Lista* lista);
+
+void imprimeListaELinks(Lista* lista);
 
 void imprimeListaArquivo(Lista* lista, FILE* arquivo);
 
@@ -71,3 +78,17 @@ Pagina* getPagina(Lista* lista, char* nome);
 Pagina* proxPagina(Lista* lista);
 
 Lista* comparaListas(Lista* commonPages, Lista* lista1, Lista* lista2);
+
+void zeraPR(Lista* lista, int numPags);
+
+double catchINPR(Lista* lista);
+
+double atualizaPR(Lista* lista, int numPags);
+
+void imprimePRLista(Lista* lista);
+
+void invertePR(Lista* lista);
+
+void selectionSort(Lista* lista);
+
+#endif // LISTA_H

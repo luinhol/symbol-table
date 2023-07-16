@@ -113,7 +113,7 @@ void deleteRBT(RBT* rbt){
 }
 
 int compare(char* key1, char* key2){
-    return strcmp(key1, key2);
+    return strcasecmp(key1, key2);
 }
 
 void printRBT(RBT* rbt){

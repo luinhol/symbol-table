@@ -118,7 +118,8 @@ void imprimeHash(Hash* hashTable){
         {
             printf("\t [%d]", i);
             lista = getListaCelula(hashTable->celulas[i]);
-            imprimeLista(hashTable->celulas[i]->paginas);
+            // imprimeLista(hashTable->celulas[i]->paginas);
+            imprimeListaELinks(hashTable->celulas[i]->paginas);
             printf("\n");
         }
         else {
@@ -154,6 +155,7 @@ Lista* getPaginasComuns(Hash** hashTable, int numHashes) {
     Hash* firstHash = hashTable[0];
     if (firstHash == NULL)
     {
+        liberaLista(commonPages);
         return NULL;
     }
     int hashTam = getTamanhoHash(firstHash);
@@ -174,4 +176,36 @@ Lista* getPaginasComuns(Hash** hashTable, int numHashes) {
     }
 
     return commonPages;
+}
+
+void calculaPageRank(Hash* hashTable, int numPags){
+    Lista* lista;
+    for(int i = 0; i < hashTable->tamanho; i++){
+        if (hashTable->celulas[i] != NULL)
+        {
+            lista = getListaCelula(hashTable->celulas[i]);
+            zeraPR(lista, numPags);
+        }
+    }
+
+    double pr = 0;
+    double er = 1;
+    while (er >= 0.000010){
+        er = 0;
+        for(int i = 0; i < hashTable->tamanho; i++){
+            if (hashTable->celulas[i] != NULL)
+            {
+                lista = getListaCelula(hashTable->celulas[i]);
+                invertePR(lista);
+            }
+        }
+        for(int i = 0; i < hashTable->tamanho; i++){
+            if (hashTable->celulas[i] != NULL)
+            {
+                lista = getListaCelula(hashTable->celulas[i]);
+                er += atualizaPR(lista, numPags);
+            }
+        }
+        er = er * (1.0/(double)numPags);
+    }
 }

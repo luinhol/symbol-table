@@ -61,6 +61,17 @@ void imprimeLista(Lista* lista){
     }
 }
 
+void imprimeListaELinks(Lista* lista){
+    Celula* p = lista->prim;
+
+    while (p !=NULL)
+    {
+        imprimePaginaELinks(p->pagina);
+        p = p->prox;
+        printf("\n\t");
+    }
+}
+
 void imprimeListaArquivo(Lista* lista, FILE* arquivo){
     Celula* p = lista->prim;
 
@@ -108,7 +119,7 @@ Pagina* getPrim(Lista* lista){
 Pagina* getPagina(Lista* lista, char* nome){
     Celula* p = lista->prim;
 
-    while ((p != NULL) && strcmp(getNomePagina(p->pagina), nome))
+    while ((p != NULL) && strcasecmp(getNomePagina(p->pagina), nome))
     {
         p = p->prox;
     }
@@ -147,13 +158,6 @@ Lista* comparaListas(Lista* commonPages, Lista* lista1, Lista* lista2){
 
     while(pag1 != NULL){
         Pagina* pag2 = getPrim(lista2);
-        // while (pag2 != NULL)
-        // {
-        //     if(comparaPagina(pag1, pag2) == 0){
-        //         inserePagina(commonPages, pag1);
-        //     }
-        //     pag2 = proxPagina(lista2);
-        // }
         
         if(getPagina(lista2, getNomePagina(pag1)) != NULL){
             inserePagina(commonPages, pag1);
@@ -163,4 +167,86 @@ Lista* comparaListas(Lista* commonPages, Lista* lista1, Lista* lista2){
     }
     
     return commonPages;
+}
+
+void zeraPR(Lista* lista, int numPags){
+    Celula* p = lista->prim;
+
+    while (p !=NULL)
+    {
+        setPR(p->pagina, numPags);
+        p = p->prox;
+    }
+}
+
+double catchINPR(Lista* lista){
+    double pr = 0;
+    Celula* p = lista->prim;
+
+    while (p !=NULL)
+    {
+        pr += getOldPR(p->pagina)/getNumLinksSaindo(p->pagina);
+        p = p->prox;
+    }
+    return pr;
+}
+
+double atualizaPR(Lista* lista, int numPags){
+    double er = 0, oldPR = 0;
+
+    Celula* p = lista->prim;
+
+    while (p !=NULL)
+    {
+        oldPR = getOldPR(p->pagina);
+        er = fabs(attPR(p->pagina, numPags) - oldPR);
+        p = p->prox;
+    }
+
+    return er;
+}
+
+void imprimePRLista(Lista* lista){
+    Celula* p = lista->prim;
+
+    while (p !=NULL)
+    {
+        printPR(p->pagina);
+        printf(" ");
+        p = p->prox;
+    }
+}
+
+void invertePR(Lista* lista){
+    Celula* p = lista->prim;
+
+    while (p !=NULL)
+    {
+        invertePRPagina(p->pagina);
+        p = p->prox;
+    }
+}
+
+void selectionSort(Lista* lista) {
+    Celula* i;
+    Celula* j;
+    Celula* maxCel;
+
+    double max;
+
+    for (i = lista->prim; i != NULL; i = i->prox) {
+        max = getPageRank(i->pagina);
+        maxCel = i;
+        for (j = i->prox; j != NULL; j = j->prox) {
+            if (getPageRank(j->pagina) > max) {
+                max = getPageRank(j->pagina);
+                maxCel = j;
+            }
+        }
+        if (maxCel != i) {
+            Pagina* temp = i->pagina;
+            i->pagina = maxCel->pagina;
+            maxCel->pagina = temp;
+        }
+    }
 }

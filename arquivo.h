@@ -37,6 +37,8 @@ int getNumLines(FILE *arquivo);
 
 Hash* getIndexFile(FILE *indexFile, int numPags);
 
+void getGraphFile(Hash* hash, FILE *indexFile, int numPags);
+
 RBT* setTermos(int numPags, Hash* hash, char* dir);
 
 RBT* leituraPagina(RBT* rbt, int numPags, FILE* arqPagina, Pagina* pagina);

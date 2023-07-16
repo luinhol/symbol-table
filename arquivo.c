@@ -14,7 +14,6 @@ struct entrada
     Hash* index;
     // arvore rubro negra das stopwords
     char** stopWords;
-
     // arvore rubro negra das palavras que nao sao stopwords
     RBT* palavras;
 };
@@ -31,6 +30,16 @@ Entrada* inicializaEntrada(int numPags, int numStopWords, Hash* index, char** st
     entrada->palavras = palavras;
 
     return entrada;
+}
+
+static char* limpaBarraN(char* str){
+    int i = 0;
+    for(i = 0;; i++) {
+        if(str[i] == '\n') {
+            str[i] = '\0';
+            return str;
+        }
+    }
 }
 
 Hash* getIndex(Entrada* entrada){
@@ -57,9 +66,13 @@ Entrada* setDados(FILE *indexFile, FILE *stopWordsFile, FILE *grafoFile, char* n
     numStopWords = getNumLines(stopWordsFile);
     char** stopWords = getStopWordsFile(stopWordsFile, numStopWords);
 
-    // // realiza leitura do arquivo de grafo
-    // numLinks = getNumLines(grafoFile);
-    // getGraphFile(index, grafoFile, numLinks);
+    // realiza leitura do arquivo de grafo
+    numLinks = getNumLines(grafoFile);
+    getGraphFile(index, grafoFile, numLinks);
+
+    calculaPageRank(index, numPags);
+
+    // imprimeHash(index);
 
     // imprimeHash(index);
     RBT* palavras = setTermos(numPags, index, nomeDirPages);
@@ -128,39 +141,44 @@ char** getStopWordsFile(FILE *stopWordsFile, int numStopWords)
     return stopWords;
 }
 
-// // f
-// void getGraphFile(Hash* hashTable, FILE *graphFile, int numLines)
-// {
-//     // declara variaveis
-//     fseek(graphFile, 0, SEEK_SET);
-//     size_t len = 0;
-//     char *line = NULL;
-//     char *pt;
-//     int i = 0;
-//     fpos_t pos;
-//     ssize_t n;
-//     Pagina* pagina;
+void getGraphFile(Hash* hashTable, FILE *graphFile, int numLines)
+{
+    // declara variaveis
+    fseek(graphFile, 0, SEEK_SET);
+    size_t len = 0;
+    char *line = NULL;
+    char *pt;
+    int i = 0, j = 0;
+    fpos_t pos;
+    ssize_t n;
+    Pagina* paginaOrigem = NULL;
+    Pagina* paginaDestino = NULL;
 
+    for (i = 0; i < numLines; i++)
+    {
+        n = getline(&line, &len, graphFile);
+        pt = strtok(line, " ");
 
-//     for (i = 0; i < numLines; i++)
-//     {
-//         n = getline(&line, &len, graphFile);
-//         pt = strtok(line, " ");
+        // pagina de origem
+        paginaOrigem = procuraHash(hashTable, pt);
 
-//         // pagina de origem
-//         pagina = procuraHash(hashTable, pt);
+        // numero de paginas destino
+        pt = strtok(NULL, " ");
 
-//         // numero de paginas destino
-//         pt = strtok(line, " ");
+        int numeroPaginas = atoi(pt);
         
+        for (j = 0; j < numeroPaginas; j++)
+        {
+            pt = strtok(NULL, " \n");
+            // limpaBarraN(pt);
+            paginaDestino = procuraHash(hashTable, pt);
+            adcionaLink(paginaOrigem, paginaDestino);
+        }
+    }
 
-//         stopWords[i] = strdup(pt);
-//     }
-
-//     // libera a variavel linha
-//     free(line);
-//     return stopWords;
-// }
+    // libera a variavel linha
+    free(line);
+}
 
 RBT* setTermos(int numPags, Hash* hash, char* dir){
     int i = 0;
@@ -205,7 +223,7 @@ RBT* setTermos(int numPags, Hash* hash, char* dir){
 int getNumLines(FILE *arquivo){
     // fseek(arquivo, 0, SEEK_SET);
     // inicializa variaveis
-    size_t len = 0, n = 0;
+    ssize_t len = 0, n = 0;
     char *line = NULL;
     int numLines = 0;
 
@@ -332,10 +350,24 @@ void realizaPesquisa(Entrada* entrada, char* palavras){
         paginasComuns = getPaginasComuns(hashs, qtdHashs);
     }
 
+    if(paginasComuns != NULL){
+        selectionSort(paginasComuns);
+    }
+
     printf("pages:");
-    imprimeLista(paginasComuns);
+    if(paginasComuns != NULL){
+        imprimeLista(paginasComuns);
+    }
     printf("\n");
 
-    liberaLista(paginasComuns);
+    printf("pr:");
+    if(paginasComuns != NULL){
+        imprimePRLista(paginasComuns);
+    }
+    printf("\n");
+
+    if(paginasComuns != NULL){
+        liberaLista(paginasComuns);
+    }
     free(hashs);
 }

@@ -28,3 +28,5 @@ void imprimeHash(Hash* hash);
 void imprimeHashArquivo(Hash* hash, FILE* arquivo);
 
 Lista* getPaginasComuns(Hash** hashTable, int numHashes);
+
+void calculaPageRank(Hash* hashTable, int numPags);
