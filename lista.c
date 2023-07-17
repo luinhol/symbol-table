@@ -1,4 +1,4 @@
-/** Define um tad Lista de No.
+/** Define um tad Lista de Paginas.
  * @file lista.c
  * @author Lucas Pereira Taborda
  */
@@ -72,17 +72,6 @@ void imprimeListaELinks(Lista* lista){
     }
 }
 
-void imprimeListaArquivo(Lista* lista, FILE* arquivo){
-    Celula* p = lista->prim;
-
-    while (p !=NULL)
-    {
-        imprimePaginaArquivo(p->pagina, arquivo);
-        fprintf(arquivo, " ");
-        p = p->prox;
-    }
-}
-
 void liberaLista(Lista* lista){
     Celula* p = lista->prim;
     Celula* ant = NULL;
@@ -90,7 +79,6 @@ void liberaLista(Lista* lista){
     while (p !=NULL)
     {
         ant = p;
-        // liberaPagina(p->pagina);
         p = p->prox;
         free(ant);
     }
@@ -112,6 +100,7 @@ void liberaListaEPaginas(Lista* lista){
 }
 
 Pagina* getPrim(Lista* lista){
+    lista->iterator = lista->prim;
     return lista->prim->pagina;
 }
 
@@ -137,10 +126,10 @@ Pagina* proxPagina(Lista* lista){
     Celula* cel;
     if(lista->iterator == NULL){
         lista->iterator = lista->prim;
-        return NULL;
     }
-
-    lista->iterator = lista->iterator->prox;
+    else{
+        lista->iterator = lista->iterator->prox;
+    }
     cel = lista->iterator;
     if(cel == NULL){
         return NULL;
@@ -150,22 +139,22 @@ Pagina* proxPagina(Lista* lista){
     return pagina;
 }
 
-Lista* comparaListas(Lista* commonPages, Lista* lista1, Lista* lista2){
-    if(lista1 == NULL || lista2 == NULL){
+Lista* comparaListas(Lista* commonPages, Lista* lista){
+    if(commonPages == NULL || lista == NULL){
         return commonPages;
     }
-    Pagina* pag1 = getPrim(lista1);
+    // adquire a primeira pagina da lista commonPages
+    Pagina* pag = getPrim(commonPages);
 
-    while(pag1 != NULL){
-        Pagina* pag2 = getPrim(lista2);
-        
-        if(getPagina(lista2, getNomePagina(pag1)) != NULL){
-            inserePagina(commonPages, pag1);
+    // itera sobre a lista commonPages
+    while(pag != NULL){
+        if(getPagina(lista, getNomePagina(pag)) == NULL){   // caso nao encontre a pagina na outra lista
+            removePagina(commonPages, pag); // remove de commonPages
         }
-
-        pag1 = proxPagina(lista1);
+        if(commonPages != NULL){
+            pag = proxPagina(commonPages);
+        }
     }
-    
     return commonPages;
 }
 
@@ -185,7 +174,7 @@ double catchINPR(Lista* lista){
 
     while (p !=NULL)
     {
-        pr += getOldPR(p->pagina)/getNumLinksSaindo(p->pagina);
+        pr += getOldPR(p->pagina)/getNumLinksSaindo(p->pagina); // PR(k-1)(j) / |Out(j)|
         p = p->prox;
     }
     return pr;
@@ -199,7 +188,7 @@ double atualizaPR(Lista* lista, int numPags){
     while (p !=NULL)
     {
         oldPR = getOldPR(p->pagina);
-        er = fabs(attPR(p->pagina, numPags) - oldPR);
+        er = fabs(attPR(p->pagina, numPags) - oldPR);   // e(k) = |PR(k)(i) - PR(k-1)(i)|
         p = p->prox;
     }
 
@@ -249,4 +238,57 @@ void selectionSort(Lista* lista) {
             maxCel->pagina = temp;
         }
     }
+}
+
+Lista* copiaLista(Lista* listaCpy, Lista* lista){
+    Celula* p = lista->prim;
+
+    while (p !=NULL)
+    {
+        inserePagina(listaCpy, p->pagina);
+        p = p->prox;
+    }
+
+    return listaCpy;
+}
+
+void removePagina(Lista* lista, Pagina* pag){
+    Celula* ant = NULL;
+    Celula* p = lista->prim;
+
+    while (p != NULL && (p->pagina != pag))
+    {
+        ant = p;
+        p = p->prox;
+    }
+
+    if((lista->prim == NULL) || (p == NULL)){
+        lista->iterator = NULL;
+        return;
+    }
+    if((lista->prim == lista->ult) && (lista->prim == p)){
+        free(p);
+        lista->iterator = NULL;
+        lista->prim = NULL;
+        lista->ult = NULL;
+        return;
+    }
+    else if(lista->prim == p){
+        lista->prim = p->prox;
+        lista->iterator = NULL;
+        free(p);
+    }
+    else if(lista->ult == p){
+        ant->prox = NULL;
+        lista->ult = ant;
+        lista->iterator = lista->ult;
+        free(p);
+    }
+    else if(p !=NULL)
+    {
+        lista->iterator = ant;
+        ant->prox = p->prox;
+        free(p);
+    }
+    return;
 }

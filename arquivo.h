@@ -16,34 +16,68 @@
  */
 typedef struct entrada Entrada;
 
-Entrada* inicializaEntrada(int numPags, int numStopWords, Hash* index, char** stopWords, RBT* palavras);
+Entrada* inicializaEntrada(int numPags, int numStopWords, Hash* index, RBT* stopWords, RBT* palavras);
 
 /**
  * Função que adquire os dados de entrada de um arquivo
- * @param arquivo Arquivo de entrada
+ * @param indexFile Arquivo de index
+ * @param stopWordsFile Arquivo de stopWords
+ * @param grafoFile Arquivo de grafo
+ * @param nomeDirPages Nome do diretorio das páginas
  * @return Estrutura com os dados de entrada
  */
 Entrada* setDados(FILE *indexFile, FILE *stopWordsFile, FILE *grafoFile, char* nomeDirPages);
 
 /**
- * Funcao que retorna a lista de adjacencia de um no (indice)
- * @param entrada Estrutura de entrada
- * @param indice indice de um No (id)
- * @return Lista de adjacencia do No Indice
+ * Funcao que retorna o numero de linhas de um arquivo
+ * @param entrada Arquivo
+ * @return Numero de linhas do arquivo
  */
-Lista* getLista(Entrada* entrada, int indice);
-
 int getNumLines(FILE *arquivo);
 
+/**
+ * Funcao que le o arquivo de index
+ * @param indexFile Arquivo de index
+ * @param numPags Numero de paginas do arquivo de index
+ * @return Hash de todas as paginas
+ */
 Hash* getIndexFile(FILE *indexFile, int numPags);
 
-void getGraphFile(Hash* hash, FILE *indexFile, int numPags);
+/**
+ * Funcao que le o arquivo de grafo
+ * @param graphFile Arquivo de grafo
+ * @param numPags Numero de paginas
+ */
+void getGraphFile(Hash* hash, FILE *graphFile, int numPags);
 
-RBT* setTermos(int numPags, Hash* hash, char* dir);
+/**
+ * Funcao que realiza a leitura de todos os arquivos dentro da pasta pages
+ * @param stopWords Arvore de stopWords ja preenchida
+ * @param numPags Numero de paginas
+ * @param hash Hash das paginas
+ * @param dir Diretorio de pages
+ * @return Arvore de todos os termos de todas as paginas
+ */
+RBT* setTermos(RBT* stopWords, int numPags, Hash* hash, char* dir);
 
-RBT* leituraPagina(RBT* rbt, int numPags, FILE* arqPagina, Pagina* pagina);
+/**
+ * Funcao que realiza a leitura de uma pagina especifica
+ * @param rbt Arvore de termos
+ * @param numPags Numero de paginas
+ * @param arqPagina Arquivo de pagina
+ * @param stopWords Arvore de stopWords
+ * @param pagina Pagina do arquivo
+ * @return Arvore de termos
+ */
+RBT* leituraPagina(RBT* rbt, int numPags, FILE* arqPagina, RBT* stopWords, Pagina* pagina);
 
-char** getStopWordsFile(FILE *stopWordsFile, int numStopWords);
+/**
+ * Funcao que realiza leitura do arquivo de stopWords
+ * @param stopWordsFile Arquivo de stopWords
+ * @param numStopWords Numero de stopWords
+ * @return Arvore de stopWords
+ */
+RBT* getStopWordsFile(FILE *stopWordsFile, int numStopWords);
 
 /**
  * Destrutor de entrada
@@ -52,13 +86,8 @@ char** getStopWordsFile(FILE *stopWordsFile, int numStopWords);
 void limpaDadosEntrada(Entrada *entrada);
 
 /**
- * Funcao que imprime o arquivo de saida
- * @param saida Arquivo de saida
- * @param tamCaminho tamanho do caminho percorrido
- * @param caminhoPercorrido trajeto percorrido
- * @param distanciaTotal distancia total percorrida
- * @param tempo tempo decorrido
+ * Funcao que realiza a pesquisa de um conjunto de palavras separadas por espaco
+ * @param entrada Estrutura de entrada
+ * @param palavras String contendo as palavras, separadas por espaço
  */
-void escreveSaida(Entrada* entrada, FILE* saida);
-
 void realizaPesquisa(Entrada* entrada, char* palavras);

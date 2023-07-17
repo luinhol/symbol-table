@@ -13,13 +13,13 @@ struct entrada
     // hash das paginas
     Hash* index;
     // arvore rubro negra das stopwords
-    char** stopWords;
+    RBT* stopWords;
     // arvore rubro negra das palavras que nao sao stopwords
     RBT* palavras;
 };
 
-// funcao que inicializara a estrutura que armazena os dados, alocando vetor para a mesma
-Entrada* inicializaEntrada(int numPags, int numStopWords, Hash* index, char** stopWords, RBT* palavras){
+// funcao que inicializara a estrutura que armazena os dados, alocando espaco para a mesma
+Entrada* inicializaEntrada(int numPags, int numStopWords, Hash* index, RBT* stopWords, RBT* palavras){
     Entrada* entrada = (Entrada*)malloc(sizeof(Entrada));
 
     entrada->numPags = numPags;
@@ -32,22 +32,12 @@ Entrada* inicializaEntrada(int numPags, int numStopWords, Hash* index, char** st
     return entrada;
 }
 
-static char* limpaBarraN(char* str){
-    int i = 0;
-    for(i = 0;; i++) {
-        if(str[i] == '\n') {
-            str[i] = '\0';
-            return str;
-        }
-    }
-}
-
 Hash* getIndex(Entrada* entrada){
     return entrada->index;
 }
 
-char* getStopWord(Entrada* entrada, int indice){
-    return entrada->stopWords[indice];
+RBT* getStopWord(Entrada* entrada, int indice){
+    return entrada->stopWords;
 }
 
 // funcao que adquire os dados a partir de um arquivo
@@ -64,18 +54,17 @@ Entrada* setDados(FILE *indexFile, FILE *stopWordsFile, FILE *grafoFile, char* n
 
     // realiza leitura do arquivo de stopWords
     numStopWords = getNumLines(stopWordsFile);
-    char** stopWords = getStopWordsFile(stopWordsFile, numStopWords);
+    RBT* stopWords = getStopWordsFile(stopWordsFile, numStopWords);
 
     // realiza leitura do arquivo de grafo
     numLinks = getNumLines(grafoFile);
     getGraphFile(index, grafoFile, numLinks);
 
+    // realiza todo o calculo do PR
     calculaPageRank(index, numPags);
 
-    // imprimeHash(index);
-
-    // imprimeHash(index);
-    RBT* palavras = setTermos(numPags, index, nomeDirPages);
+    // funcao que adquire os termos e os coloca na arvore de termos
+    RBT* palavras = setTermos(stopWords, numPags, index, nomeDirPages);
 
     // inicializa a entrada
     entrada = inicializaEntrada(numPags, numStopWords, index, stopWords, palavras);
@@ -116,31 +105,77 @@ Hash* getIndexFile(FILE *indexFile, int numPags)
 }
 
 // funcao que adquire os index a partir do arquivo de index
-char** getStopWordsFile(FILE *stopWordsFile, int numStopWords)
+RBT* getStopWordsFile(FILE *stopWordsFile, int numStopWords)
 {
     // declara variaveis
-    char** stopWords = (char**)malloc(sizeof(char*)*numStopWords);
     fseek(stopWordsFile, 0, SEEK_SET);
     size_t len = 0;
     char *line = NULL;
     char *pt;
     int i = 0;
-    fpos_t pos;
     ssize_t n;
+    RBT* rbt = NULL;
+    Termo* termo;
+    char* palavra;
 
     for (i = 0; i < numStopWords; i++)
     {
         n = getline(&line, &len, stopWordsFile);
         pt = strtok(line, "\n");
         strcat(pt, "\0");
-        stopWords[i] = strdup(pt);
+
+        palavra = strdup(pt);
+
+        if(search(rbt, palavra)){ // se o termo ainda nao foi incluido na arvore
+            rbt = RBT_insert(rbt, palavra, NULL); // insere palavra na arvore com termo NULO, pois é uma arvore de stop word
+        }
+        else{
+            free(palavra);
+        }
     }
 
     // libera a variavel linha
     free(line);
-    return stopWords;
+    return rbt;
 }
 
+// funcao que realiza a leitura de um arquivo e salva seus termos em uma arvore rubro negra
+RBT* leituraPagina(RBT* rbt, int numPags, FILE* arqPagina, RBT* stopWords, Pagina* pagina){
+    fseek(arqPagina, 0, SEEK_SET);
+
+    size_t len = 0;
+    char *line = NULL;
+    char *pt;
+    Termo* termo;
+    char* palavra;
+
+    while (!feof_unlocked(arqPagina))
+    {
+        ssize_t n = getline(&line, &len, arqPagina);
+
+        char *token = strtok(line, " \t\n");  // divide o buffer com os delimitadores
+
+        while (token != NULL) {
+            palavra = strdup(token);
+
+            termo = search(rbt, palavra);
+            if(termo == NULL && search(stopWords, palavra) == NULL){ // se o termo ainda nao foi incluido na arvore
+                termo = inicializaTermo(palavra, numPags);   // deve ser inicializado
+                rbt = RBT_insert(rbt, palavra, termo); // e inserido no arvore
+            }
+            else{
+                free(palavra);
+            }
+            adcionaPagina(termo, pagina);   // adciona pagina na hash de paginas que o termo esta
+
+            token = strtok(NULL, " \t\n");  // vai para o proximo token
+        }
+    }
+    free(line);
+    return rbt;
+}
+
+// funcao que realiza a leitura do arquivo
 void getGraphFile(Hash* hashTable, FILE *graphFile, int numLines)
 {
     // declara variaveis
@@ -164,13 +199,12 @@ void getGraphFile(Hash* hashTable, FILE *graphFile, int numLines)
 
         // numero de paginas destino
         pt = strtok(NULL, " ");
-
         int numeroPaginas = atoi(pt);
         
+        // itera sobre as paginas de destino, inserindo o link entre ela e a pagina origem
         for (j = 0; j < numeroPaginas; j++)
         {
             pt = strtok(NULL, " \n");
-            // limpaBarraN(pt);
             paginaDestino = procuraHash(hashTable, pt);
             adcionaLink(paginaOrigem, paginaDestino);
         }
@@ -180,7 +214,8 @@ void getGraphFile(Hash* hashTable, FILE *graphFile, int numLines)
     free(line);
 }
 
-RBT* setTermos(int numPags, Hash* hash, char* dir){
+// funcao que realiza a leitura de todos os arquivos dentro da pasta pages
+RBT* setTermos(RBT* stopWords, int numPags, Hash* hash, char* dir){
     int i = 0;
     FILE* arqPagina;
     Lista* lista;
@@ -191,16 +226,17 @@ RBT* setTermos(int numPags, Hash* hash, char* dir){
 
     RBT* rbt = NULL;
 
+    // vai iterar na hash de index, abrindo os arquivos referentes a cada index
     for (i = 0; i < getTamanhoHash(hash); i++)
     {
         lista = getListaHash(hash, i);
         if(lista != NULL){
             pagina = getPrim(lista);
 
+            // para cada pagina dentro da lista de paginas de uma celula da hash
             while (pagina != NULL)
             {
                 nomeArqPagina = strdup(dir);
-
                 nomePagina = getNomePagina(pagina);
                 tamNomeArquivo = strlen(nomeArqPagina) + strlen(nomePagina) + 2;
                 nomeArqPagina = (char*)realloc(nomeArqPagina, sizeof(char*)* tamNomeArquivo);
@@ -208,7 +244,8 @@ RBT* setTermos(int numPags, Hash* hash, char* dir){
                 strcat(nomeArqPagina, "\0");
                 arqPagina = fopen(nomeArqPagina, "r");
 
-                rbt = leituraPagina(rbt, numPags, arqPagina, pagina);
+                // realiza leitura da pagina e salva os termos na arvore de termos
+                rbt = leituraPagina(rbt, numPags, arqPagina, stopWords, pagina);
 
                 free(nomeArqPagina);
                 fclose(arqPagina);
@@ -221,8 +258,6 @@ RBT* setTermos(int numPags, Hash* hash, char* dir){
 
 // funcao para contar a quantidade de linhas do arquivo
 int getNumLines(FILE *arquivo){
-    // fseek(arquivo, 0, SEEK_SET);
-    // inicializa variaveis
     ssize_t len = 0, n = 0;
     char *line = NULL;
     int numLines = 0;
@@ -247,82 +282,30 @@ int getNumLines(FILE *arquivo){
     return numLines;
 }
 
-RBT* leituraPagina(RBT* rbt, int numPags, FILE* arqPagina, Pagina* pagina){
-    fseek(arqPagina, 0, SEEK_SET);
-
-    size_t len = 0;
-    char *line = NULL;
-    char *pt;
-    Termo* termo;
-    char* palavra;
-
-    while (!feof_unlocked(arqPagina))
-    {
-        ssize_t n = getline(&line, &len, arqPagina);
-
-        char *token = strtok(line, " \t\n");  // divide o buffer com os delimitadores
-
-        while (token != NULL) {
-            palavra = strdup(token);
-            // printf("palavra: %s\n", palavra);
-            termo = search(rbt, palavra);
-            if(termo == NULL){ // se o termo ainda nao foi incluido na arvore
-                termo = inicializaTermo(palavra, numPags);   // deve ser inicializado
-                // liberaTermo(termo);
-                rbt = RBT_insert(rbt, palavra, termo); // e inserido no arvore
-            }
-            else{
-                free(palavra);
-            }
-            adcionaPagina(termo, pagina);   // adciona pagina na hash de paginas que o termo esta
-
-            token = strtok(NULL, " \t\n");  // vai para o proximo token
-        }
-    }
-    // printf("paginas de cada termo:\n");
-    // printRBT(rbt);
-    free(line);
-    return rbt;
-}
-
+// funcao de limpeza da estrutura de entrada
 void limpaDadosEntrada(Entrada* entrada){
-    int i;
-
-    for(i = 0; i < entrada->numStopWords; i++){
-        free(entrada->stopWords[i]);
-    }
-    free(entrada->stopWords);
     liberaHash(entrada->index, true);
     deleteRBT(entrada->palavras);
+    deleteRBT(entrada->stopWords);
 }
 
-void escreveSaida(Entrada* entrada, FILE* saida){
-    fprintf(saida, "stopwords:\n");
-    for (int i = 0; i < entrada->numStopWords; i++)
-    {
-        fprintf(saida, "%s\n", entrada->stopWords[i]);
-    }
-}
-
+// funcao que realiza a pesquisa de uma sequencia de palavras informada
 void realizaPesquisa(Entrada* entrada, char* palavras){
-    printf("search:%s", palavras);
-
-    Pagina** pages;
+    // inicializa variaveis
     Lista* paginasComuns;
-
-    int tamHashs = 5, qtdHashs = 0;
-    Hash** hashs = (Hash**)calloc(tamHashs, sizeof(Hash*));
-
+    int qtdMaxTermos = 5, qtdTermos = 0;
+    Hash** hashs = (Hash**)calloc(qtdMaxTermos, sizeof(Hash*));
+    Termo** termos = (Termo**)calloc(qtdMaxTermos, sizeof(Termo*));
     Termo* termo = NULL;
     char *palavra;
-    char *token = strtok(palavras, " ");
+    char *token = strtok(palavras, " \n");
 
-    int i = 0;
+    int i = 0, j = 0;
 
-    // realiza leitura dos tokens e armazena o vetor dos termos
+    // realiza leitura dos tokens e armazena
     while (token != NULL) {
         palavra = strdup(token);
-        termo = search(entrada->palavras, palavra);
+        termo = search(entrada->palavras, palavra); // procura o token na arvore de termos
         free(palavra);
 
         // se um dos termos nao existir na arvore ja retorna 
@@ -330,44 +313,59 @@ void realizaPesquisa(Entrada* entrada, char* palavras){
             break;
         }
 
+        // insere o termo em um vetor de termos
+        termos[i] = termo;
+        qtdTermos++;
+
+        // armazena a hash de um termo (paginas em que esse termo aparece)
         hashs[i] = getHash(termo);
-        qtdHashs++;
 
         i++;
-        if(tamHashs - i <= 0){
-            i += tamHashs;
-            tamHashs = tamHashs*2;
-            hashs = (Hash**)realloc(hashs, sizeof(Hash*)*tamHashs);
+        // verifica se a quantidade de termos informados excedeu o limite dos vetore e aloca mais caso necessário
+        if(qtdMaxTermos - qtdTermos < 0){
+            i += qtdTermos;
+            qtdMaxTermos = qtdMaxTermos*2;
+            hashs = (Hash**)realloc(hashs, sizeof(Hash*)*qtdMaxTermos);
+            termos = (Termo**)realloc(termos, sizeof(Termo*)*qtdMaxTermos);
         }
         token = strtok(NULL, " \n");  // vai para o proximo token
     }
 
-    // for(i = 0; i < numTermos; i++){
-    //     printf("\ntermo: %s", getNomeTermo(termos[i]));
-    // }
-
+    // se os termos existirem em algum arquivo, computa as paginas em que aparecem de forma mutua
     if(hashs != NULL){
-        paginasComuns = getPaginasComuns(hashs, qtdHashs);
+        paginasComuns = getPaginasComuns(hashs, qtdTermos);
     }
 
+    // reordena as paginas comuns por ordem de PR
     if(paginasComuns != NULL){
         selectionSort(paginasComuns);
     }
 
-    printf("pages:");
+    // print pesquisa
+    printf("search:", palavras);
+    for(j = 0; j < qtdTermos; j++){
+        printf("%s ", getNomeTermo(termos[j]));
+    }
+
+    // print paginas comuns
+    printf("\npages:");
     if(paginasComuns != NULL){
         imprimeLista(paginasComuns);
     }
     printf("\n");
 
+    // print PR das paginas comuns
     printf("pr:");
     if(paginasComuns != NULL){
         imprimePRLista(paginasComuns);
     }
     printf("\n");
 
+    // libera espaco alocado
     if(paginasComuns != NULL){
         liberaLista(paginasComuns);
     }
+    
+    free(termos);
     free(hashs);
 }

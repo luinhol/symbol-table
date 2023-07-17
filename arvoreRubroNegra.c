@@ -1,14 +1,21 @@
+/** Define um tad ArvoreRubroNegra de Termos.
+ * @file arvoreRubroNegra.c
+ * @author Lucas Pereira Taborda
+ */
+
 #include "arvoreRubroNegra.h"
 
 typedef struct node RBT;
 
+// estrutura no
 struct node {
-    bool color;
-    char* key;
-    Termo* termo;
-    RBT *l, *r;
+    bool color; // cor do no
+    char* key; // chave de busca do no
+    Termo* termo; // termo que o no representa
+    RBT *l, *r; // subarvore da esquerda e da direita
 };
 
+// Funcao que cria um no
 RBT* create_node(char* key, bool color, Termo* termo){
     RBT* new = (RBT*)malloc(sizeof(RBT));
 
@@ -21,6 +28,7 @@ RBT* create_node(char* key, bool color, Termo* termo){
     return new;
 }
 
+// Funcao que busca uma chave
 Termo* search(RBT *n, char* key) {
     while (n != NULL) {
         int cmp;
@@ -69,8 +77,8 @@ void flip_colors(RBT *h) {
     h->r->color = BLACK;
 }
 
+// Funcao que insere na arvore
 RBT* RBT_insert(RBT *h, char* key, Termo* termo) {
-    // Insert at bottom and color it red.
     if (h == NULL) {
         return create_node(key, RED, termo);
     }
@@ -87,35 +95,42 @@ RBT* RBT_insert(RBT *h, char* key, Termo* termo) {
         h->termo = termo;
         // printf("termo repetido\n");
     }
-    // Lean left.
+    // Rotaciona a esquerda.
     if (is_red(h->r) && !is_red(h->l)) {
         h = rotate_left(h);
     }
-    // Balance 4-node.
+    // Balaceia 4node.
     if (is_red(h->l) && is_red(h->l->l)) {
         h = rotate_right(h);
     }
-    // Split 4-node.
+    // Divide 4node.
     if (is_red(h->l) && is_red(h->r)) {
         flip_colors(h);
     }
     return h;
 }
 
+// deleta arvore recursivamente
 void deleteRBT(RBT* rbt){
     if(rbt != NULL)
     {
         deleteRBT(rbt->l);
         deleteRBT(rbt->r);
+        if(rbt->termo == NULL){
+            printf("%s\n", rbt->key);
+            free(rbt->key);
+        }
         liberaTermo(rbt->termo);
         free(rbt);
     }
 }
 
+// compara 2 chaves
 int compare(char* key1, char* key2){
     return strcasecmp(key1, key2);
 }
 
+// imprime arvore
 void printRBT(RBT* rbt){
     if(rbt != NULL)
     {

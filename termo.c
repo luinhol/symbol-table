@@ -39,7 +39,15 @@ void adcionaPagina(Termo* termo, Pagina* pagina){
 }
 
 void liberaTermo(Termo* termo){
-    liberaHash(termo->paginas, false);
-    free(termo->palavra);
-    free(termo);
+    if(termo != NULL){
+        liberaHash(termo->paginas, false);
+        free(termo->palavra);
+        free(termo);
+    }
+}
+
+int comparaTermos(const void* a, const void* b){
+    Termo* termo1 = (Termo*)a;
+    Termo* termo2 = (Termo*)b;
+    return strcasecmp(getNomeTermo(termo1), getNomeTermo(termo2));
 }

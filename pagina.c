@@ -43,12 +43,8 @@ void imprimePaginaELinks(Pagina* p){
     imprimeLista(p->linksEntrando);
 }
 
-void imprimePaginaArquivo(Pagina* p, FILE* saida){
-    fprintf(saida, "nome pagina: %s", p->nome);
-}
-
 void adcionaLink(Pagina* origem, Pagina* destino){
-    inserePagina(destino->linksEntrando, origem);
+    inserePagina(destino->linksEntrando, origem);   // insere a pagina origem na lista de paginas entrando do destino
     destino->numLinksEntrando++;
     origem->numLinksSaindo++;
 }
@@ -91,11 +87,11 @@ double attPR(Pagina* p, int numPags){
     double somatorio = 0;
     if(p->numLinksSaindo == 0){
         somatorio = catchINPR(linksChegando);
-        pr = ((1.0-a)/(double)numPags) + (a*getOldPR(p)) + (a*somatorio);
+        pr = ((1.0-a)/(double)numPags) + (a*getOldPR(p)) + (a*somatorio);   // (1-a)/n + a*PR(k-1)(i) + a*(somatorio)
     }
     else{
-        somatorio = catchINPR(linksChegando);
-        pr = ((1.0-a)/(double)numPags) + (a*somatorio);
+        somatorio = catchINPR(linksChegando);   // PR(k-1)(j) / |Out(j)|
+        pr = ((1.0-a)/(double)numPags) + (a*somatorio); // (1-a)/n + a*(somatorio)
     }
 
     p->pageRank = pr;

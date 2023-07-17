@@ -10,13 +10,11 @@ int main(int argc, char* argv[]){
     char nomeArqIndex[99] = "";
     char nomeArqStopWords[99] = "";
     char nomeArqGrafo[99] = "";
-    char nomeArquivoSaida[99] = "";
     char nomeDirPages[99] = "";
 
     FILE *arqIndex;
     FILE *arqStopWords;
     FILE *arqGrafo;
-    FILE *arqSaida;
     Entrada *entrada;
 
     size_t len = 0;
@@ -25,10 +23,9 @@ int main(int argc, char* argv[]){
     char* palavras;
 
     // copia o nome do diretorio de entrada fornecido como parametro
-    strcat(nomeDiretorioEntrada, "/mnt/c/Users/lucas/Desktop/codes/UFES/4 periodo/tbo/c/trabalho3/exemplo/exemplo/");
-    // strcat(nomeDiretorioEntrada, "/mnt/c/Users/lucas/Desktop/codes/UFES/4 periodo/tbo/c/trabalho3/exemploPDF/");
-    // strcat(nomeDiretorioEntrada, argv[1]);
-    strcat(nomeArquivoSaida, "saida.txt");
+    // strcat(nomeDiretorioEntrada, "/mnt/c/Users/lucas/Desktop/codes/UFES/4periodo/tbo/c/trabalho3/exemplo/exemplo/");
+    // strcat(nomeDiretorioEntrada, "/mnt/c/Users/lucas/Desktop/codes/UFES/4periodo/tbo/c/trabalho3/exemploPDF/");
+    strcat(nomeDiretorioEntrada, argv[1]);
 
     strcat(nomeArqIndex, nomeDiretorioEntrada);
     strcat(nomeArqStopWords, nomeDiretorioEntrada);
@@ -44,7 +41,6 @@ int main(int argc, char* argv[]){
     arqIndex = fopen(nomeArqIndex, "r");
     arqStopWords = fopen(nomeArqStopWords, "r");
     arqGrafo = fopen(nomeArqGrafo, "r");
-    arqSaida = fopen(nomeArquivoSaida, "w");
 
     // verifica se o arquivo é válido
     if (arqIndex == NULL)
@@ -71,9 +67,6 @@ int main(int argc, char* argv[]){
         realizaPesquisa(entrada, palavras);
         free(palavras);
     }
-    
-    
-    // escreveSaida(entrada, arqSaida);
 
     limpaDadosEntrada(entrada);
     free(line);
@@ -81,6 +74,5 @@ int main(int argc, char* argv[]){
     fclose(arqIndex);
     fclose(arqStopWords);
     fclose(arqGrafo);
-    fclose(arqSaida);
     return 0;
 }
